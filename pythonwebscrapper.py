@@ -30,7 +30,9 @@ def URLparser(URLraw):
 
 def HoursParser(hourTag):
 	hourString = str(hourTag)
-	list_of_string_remove ['\n', ' ']
+	list_of_string_remove =  ['\n', ' ']
+	regex = r"([<]).+?([>])"
+	hourString = re.sub(regex, '', hourString)
 	for sample in list_of_string_remove:
 		hourString = hourString.replace(sample, '')
 	if hourString.lower() == 'hoursunavailable':
@@ -44,5 +46,5 @@ for library in library_info:
 	library_names.append(URLparser(URLraw))
 	library_hours.append(HoursParser(hourTag))	
 
-print library_names
-print library_hours
+print(library_names)
+print(library_hours)
