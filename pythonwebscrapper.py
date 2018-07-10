@@ -30,7 +30,7 @@ def URLparser(URLraw):
 
 def HoursParser(hourTag):
 	hourString = str(hourTag)
-	list_of_string_remove =  ['\n', ' ']
+	list_of_string_remove =  ['By appointment only','\n', ' ']
 	regex = r"([<]).+?([>])"
 	hourString = re.sub(regex, '', hourString)
 	for sample in list_of_string_remove:
@@ -39,6 +39,30 @@ def HoursParser(hourTag):
 		return None
 	return hourString
 
+"""
+This divides up the hours string into two different strings to be converted into times
+"""
+def stringIntaker(sample):
+	dash_index = sample.find('-')
+	if dash_index == -1:
+		return None
+	first_time = stringToInt(sample[:dash_index])
+	second_time = -1
+	if dash_index == len(sample)-1:
+		second_time = 24
+	else:
+		second_time = stringToInt(sample[dash_index+1:])
+	
+"""
+This converts the string from 2pm to 14.
+"""
+def stringToInt(sample):
+	time = int(sample[:-2])
+	if sample[-2:] == 'pm':
+		time+=12
+	return time
+	
+
 for library in library_info:
 	URLsoup = library.find('h2', class_ = 'library-name-block')
 	URLraw = URLsoup.find(lambda tag: tag.name == 'a' and tag.get('href') and tag.text)
@@ -46,5 +70,5 @@ for library in library_info:
 	library_names.append(URLparser(URLraw))
 	library_hours.append(HoursParser(hourTag))	
 
-print(library_names)
-print(library_hours)
+library_INFO = pd.DataFrame(
+
