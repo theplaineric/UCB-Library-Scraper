@@ -46,29 +46,34 @@ def stringIntaker(sample):
 	dash_index = sample.find('-')
 	if dash_index == -1:
 		return None
-	first_time = stringToInt(sample[:dash_index])
-	second_time = -1
+	first_time, second_time = -1, -1
 	if dash_index == len(sample)-1:
 		second_time = 24
+		first_time = stringToInt(sample[:dash_index])
+	elif dash_index == 0:
+		first_time = 0
+		second_time = stringToInt(sample[dash_index+1:])
 	else:
 		second_time = stringToInt(sample[dash_index+1:])
-	
+		first_time = stringToInt(sample[:dash_index])
+	return (first_time, second_time)
+
 """
 This converts the string from 2pm to 14.
 """
 def stringToInt(sample):
 	time = int(sample[:-2])
-	if sample[-2:] == 'pm':
+	if sample[-2:] == 'pm' && time != 12:
 		time+=12
+	if sample == '12am':
+		return 0
 	return time
-	
 
 for library in library_info:
 	URLsoup = library.find('h2', class_ = 'library-name-block')
 	URLraw = URLsoup.find(lambda tag: tag.name == 'a' and tag.get('href') and tag.text)
 	hourTag = library.find('div', class_ = 'library-hours-block')
 	library_names.append(URLparser(URLraw))
-	library_hours.append(HoursParser(hourTag))	
+	library_hours.append(HoursParser(hourTag))
 
-library_INFO = pd.DataFrame(
-
+for 
