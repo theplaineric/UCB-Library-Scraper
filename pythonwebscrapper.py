@@ -45,7 +45,7 @@ This divides up the hours string into two different strings to be converted into
 def stringIntaker(sample):
 	dash_index = sample.find('-')
 	if dash_index == -1:
-		return None
+		return (None, None)
 	first_time, second_time = -1, -1
 	if dash_index == len(sample)-1:
 		second_time = 24
@@ -63,7 +63,7 @@ This converts the string from 2pm to 14.
 """
 def stringToInt(sample):
 	time = int(sample[:-2])
-	if sample[-2:] == 'pm' && time != 12:
+	if sample[-2:] == 'pm' and time != 12:
 		time+=12
 	if sample == '12am':
 		return 0
@@ -76,4 +76,18 @@ for library in library_info:
 	library_names.append(URLparser(URLraw))
 	library_hours.append(HoursParser(hourTag))
 
-for 
+library_open_times = []
+library_closed_times = []
+
+for library in library_hours:
+	parsed_hours_string = stringIntaker(library)
+	library_open_times.append(parsed_hours_string[0])
+	library_closed_times.append(parsed_hours_string[1])
+	
+library_dataframe = pd.DataFrame({'opening_time' : pd.Series(library_open_times, index = library_names), 'closing_time': pd.Series(library_closed_times, index = library_names)})
+
+df = library_dataframe[library_dataframe.opening_time.notnull() & library_dataframe.closing_time.notnull()]
+
+df.opening_time = df.opening_time.astype('int32')
+df.closing_time = df.closing_time.astype('int32')
+print(df.head())
