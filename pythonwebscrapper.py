@@ -1,5 +1,6 @@
 # import libraries
 import urllib
+from datetime import datetime
 from bs4 import BeautifulSoup
 import pandas as pd
 import re
@@ -43,30 +44,45 @@ def HoursParser(hourTag):
 This divides up the hours string into two different strings to be converted into times
 """
 def stringIntaker(sample):
+	time = datetime.strptime('12:00am', '%I:%M%p')
 	dash_index = sample.find('-')
 	if dash_index == -1:
 		return (None, None)
 	first_time, second_time = -1, -1
 	if dash_index == len(sample)-1:
-		second_time = 24
-		first_time = stringToInt(sample[:dash_index])
+		second_time = time
+		first_time = stringToTime(sample[:dash_index])
 	elif dash_index == 0:
-		first_time = 0
-		second_time = stringToInt(sample[dash_index+1:])
+		first_time = time
+		second_time = stringToTime(sample[dash_index+1:])
 	else:
-		second_time = stringToInt(sample[dash_index+1:])
-		first_time = stringToInt(sample[:dash_index])
+		second_time = stringToTime(sample[dash_index+1:])
+		first_time = stringToTime(sample[:dash_index])
 	return (first_time, second_time)
+
+"""
+Checks if a string is an integer
+"""
+def represent_Int(i):
+	try:
+		int(i)
+		return True
+	except ValueError:
+		return False
 
 """
 This converts the string from 2pm to 14.
 """
-def stringToInt(sample):
-	time = int(sample[:-2])
-	if sample[-2:] == 'pm' and time != 12:
-		time+=12
-	if sample == '12am':
-		return 0
+def stringToTime(sample):
+	if sample == '12noon':
+		sample = '12:00pm'
+	colon_index = sample.find(':')
+	#checks if second character is a string, then zero-pads
+	if not represent_Int(sample[1]):
+		sample = '0'+sample	
+	if colon_index == -1:
+		sample = sample[:2]+':00'+sample[-2:]
+	time = datetime.strptime(sample,'%I:%M%p')
 	return time
 
 for library in library_info:
@@ -88,6 +104,4 @@ library_dataframe = pd.DataFrame({'opening_time' : pd.Series(library_open_times,
 
 df = library_dataframe[library_dataframe.opening_time.notnull() & library_dataframe.closing_time.notnull()]
 
-df.opening_time = df.opening_time.astype('int32')
-df.closing_time = df.closing_time.astype('int32')
 print(df.head())
