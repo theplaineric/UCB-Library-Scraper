@@ -1,6 +1,6 @@
 # import libraries
 import urllib
-from datetime import datetime
+from datetime import datetime, time
 from bs4 import BeautifulSoup
 import pandas as pd
 import re
@@ -44,7 +44,7 @@ def HoursParser(hourTag):
 This divides up the hours string into two different strings to be converted into times
 """
 def stringIntaker(sample):
-	time = datetime.strptime('12:00am', '%I:%M%p')
+	time = datetime.strptime('12:00am', '%I:%M%p').time()
 	dash_index = sample.find('-')
 	if dash_index == -1:
 		return (None, None)
@@ -82,7 +82,7 @@ def stringToTime(sample):
 		sample = '0'+sample	
 	if colon_index == -1:
 		sample = sample[:2]+':00'+sample[-2:]
-	time = datetime.strptime(sample,'%I:%M%p')
+	time = datetime.strptime(sample,'%I:%M%p').time()
 	return time
 
 for library in library_info:
@@ -104,4 +104,5 @@ library_dataframe = pd.DataFrame({'opening_time' : pd.Series(library_open_times,
 
 df = library_dataframe[library_dataframe.opening_time.notnull() & library_dataframe.closing_time.notnull()]
 
-print(df.head())
+#grab current system time
+now_time = datetime.datetime.now().time()
