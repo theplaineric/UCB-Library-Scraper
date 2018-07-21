@@ -105,4 +105,9 @@ library_dataframe = pd.DataFrame({'opening_time' : pd.Series(library_open_times,
 df = library_dataframe[library_dataframe.opening_time.notnull() & library_dataframe.closing_time.notnull()]
 
 #grab current system time
-now_time = datetime.datetime.now().time()
+now_time = datetime.now().time()
+opened = df.opening_time.map(lambda time: now_time>time)
+before_closed = df.closing_time.map(lambda time: now_time<time)
+is_library_open = opened & before_closed
+df['still_open'] = is_library_open
+print(df)
