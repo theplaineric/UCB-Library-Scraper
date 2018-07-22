@@ -1,6 +1,6 @@
 # import libraries
 import urllib
-from datetime import datetime, time
+from datetime import datetime, time, timedelta
 from bs4 import BeautifulSoup
 import pandas as pd
 import re
@@ -79,7 +79,7 @@ def stringToTime(sample):
 	colon_index = sample.find(':')
 	#checks if second character is a string, then zero-pads
 	if not represent_Int(sample[1]):
-		sample = '0'+sample	
+		sample = '0'+sample
 	if colon_index == -1:
 		sample = sample[:2]+':00'+sample[-2:]
 	time = datetime.strptime(sample,'%I:%M%p').time()
@@ -99,15 +99,41 @@ for library in library_hours:
 	parsed_hours_string = stringIntaker(library)
 	library_open_times.append(parsed_hours_string[0])
 	library_closed_times.append(parsed_hours_string[1])
-	
+
 library_dataframe = pd.DataFrame({'opening_time' : pd.Series(library_open_times, index = library_names), 'closing_time': pd.Series(library_closed_times, index = library_names)})
 
 df = library_dataframe[library_dataframe.opening_time.notnull() & library_dataframe.closing_time.notnull()]
 
+def open_or_close(time, now_time, opening = True):
+	if opening:
+		if now_time>time:
+			return True
+	else:
+		if now_time<time:
+			return True
+	return False
+
+def time_distance_calculator(time_A, time_B):
+	#time_A should be current time
+	time_delta_A = timedelta(hours = time_A.hour(), minutes = time_A.minute())
+	time_delta_B = timedelta(hours = time_B.hour(), minutes = time_B.minute())
+	#calculate time until closing_time
+	difference = time_delta_B - time_delta_A
+	if abs(difference) != difference:
+		return None
+	return difference
+
+
 #grab current system time
 now_time = datetime.now().time()
-opened = df.opening_time.map(lambda time: now_time>time)
-before_closed = df.closing_time.map(lambda time: now_time<time)
+opened = df.opening_time.map(lambda time: open_or_close(time, now_time))
+before_closed = df.closing_time.map(lambda time: open_or_close(time, now_time, False))
 is_library_open = opened & before_closed
 df['still_open'] = is_library_open
+time_til_open = df.opening_time.map(lambda time: time_distance_calculator(now_time, time))
+time_til_close = df.closing_time.map(lambda time: time_distance_calculator(now_time, time))
+
 print(df)
+
+#We want:
+#If open, how long until it closes; if closed, how long until open
