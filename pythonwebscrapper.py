@@ -115,8 +115,8 @@ def open_or_close(time, now_time, opening = True):
 
 def time_distance_calculator(time_A, time_B):
 	#time_A should be current time
-	time_delta_A = timedelta(hours = time_A.hour(), minutes = time_A.minute())
-	time_delta_B = timedelta(hours = time_B.hour(), minutes = time_B.minute())
+	time_delta_A = timedelta(hours = time_A.hour, minutes = time_A.minute)
+	time_delta_B = timedelta(hours = time_B.hour, minutes = time_B.minute)
 	#calculate time until closing_time
 	difference = time_delta_B - time_delta_A
 	if abs(difference) != difference:
@@ -130,10 +130,14 @@ opened = df.opening_time.map(lambda time: open_or_close(time, now_time))
 before_closed = df.closing_time.map(lambda time: open_or_close(time, now_time, False))
 is_library_open = opened & before_closed
 df['still_open'] = is_library_open
-df['time_til_open'] = df.opening_time.map(lambda time: time_distance_calculator(now_time, time))
-df['time_til_close'] = df.closing_time.map(lambda time: time_distance_calculator(now_time, time))
 
-print(df.loc[df['time_til_close'] != None])
-print(df.loc[df['time_til_open'] != None])
+time_til_open = df.opening_time.map(lambda time: time_distance_calculator(now_time, time))
+time_til_close = df.closing_time.map(lambda time: time_distance_calculator(now_time, time))
+df['time_til_open'] = time_til_open
+df['time_til_close'] = time_til_close
+
+print(df.loc[df['time_til_close'].notnull() & df['time_til_open'].isnull()])
+print(df.loc[df['time_til_open'].notnull()])
+
 #We want:
 #If open, how long until it closes; if closed, how long until open
