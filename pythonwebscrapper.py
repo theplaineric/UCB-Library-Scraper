@@ -123,7 +123,15 @@ def time_distance_calculator(time_A, time_B):
 		return None
 	return difference
 
+def time_to_string(time):
+	return time.strptime("%I:%M% p")
 
+def time_delta_to_string(td):
+	seconds = abs(td.total_seconds())
+	hours, remainder = divmod(seconds, 3600)
+	minutes = remainder//60
+	return '{}:{:2}'.format(hours,minutes)
+	
 #grab current system time
 now_time = datetime.now().time()
 opened = df.opening_time.map(lambda time: open_or_close(time, now_time))
@@ -132,8 +140,9 @@ is_library_open = opened & before_closed
 df['still_open'] = is_library_open
 df['time_til_open'] = df.opening_time.map(lambda time: time_distance_calculator(now_time, time))
 df['time_til_close'] = df.closing_time.map(lambda time: time_distance_calculator(now_time, time))
+df['opening_time', 'closing_time'].apply(time_to_string)
 
-print(df.loc[df['time_til_close'] != None])
-print(df.loc[df['time_til_open'] != None])
+print(df.loc[df['time_til_close'] != None].sort_values(by=['time_til_close']).apply(time_delta_to_string))
+print(df.loc[df['time_til_open'] != None].sort_values(by=['time_til_open']).apply(time_delta_to_string))
 #We want:
 #If open, how long until it closes; if closed, how long until open
