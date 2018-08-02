@@ -138,11 +138,14 @@ opened = df.opening_time.map(lambda time: open_or_close(time, now_time))
 before_closed = df.closing_time.map(lambda time: open_or_close(time, now_time, False))
 is_library_open = opened & before_closed
 df['still_open'] = is_library_open
-df['time_til_open'] = df.opening_time.map(lambda time: time_distance_calculator(now_time, time))
-df['time_til_close'] = df.closing_time.map(lambda time: time_distance_calculator(now_time, time))
+
+time_til_open = df.opening_time.map(lambda time: time_distance_calculator(now_time, time))
+time_til_close = df.closing_time.map(lambda time: time_distance_calculator(now_time, time))
+df['time_til_open'] = time_til_open
+df['time_til_close'] = time_til_close
 df['opening_time', 'closing_time'].apply(time_to_string)
 
-print(df.loc[df['time_til_close'] != None].sort_values(by=['time_til_close']).apply(time_delta_to_string))
-print(df.loc[df['time_til_open'] != None].sort_values(by=['time_til_open']).apply(time_delta_to_string))
+print(df.loc[df['time_til_close'].notnull() & df['time_til_open'].isnull()].sort_values(by=['time_til_close']).apply(time_delta_to_string))
+print(df.loc[df['time_til_open'].notnull()].sort_values(by=['time_til_open']).apply(time_delta_to_string))
 #We want:
 #If open, how long until it closes; if closed, how long until open
